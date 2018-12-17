@@ -4,6 +4,8 @@
 
 ## Build Setup
 
+Studying vuejs the in the course: [Vuejs do jeito ninja](https://www.youtube.com/playlist?list=PLcoYAcR89n-qq1vGRbaUiV6Q9puy0qigW).
+
 ``` bash
 # install dependencies
 npm install
@@ -28,3 +30,4 @@ npm test
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+
