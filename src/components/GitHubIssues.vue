@@ -5,6 +5,10 @@
             Página que lista issues de um repositório do Github, usando Vue.js.
         </p>
 
+        <div v-if="response.status === 'error'" class="alert alert-danger">
+          {{ response.message }}
+        </div>
+
         <div class="row">
             <div class="col">
                 <div class="form-group">
@@ -44,7 +48,7 @@
             <tr v-if="loader.getIssues">
                 <td class="text-center" colspan="2"><img src="/static/loading.svg" alt=""></td>
             </tr>
-            <tr v-if="issues.length > 0 && !loader.getIssues"
+            <tr v-if="showIssues"
                 v-for="issue in issues"
                 :key="issue.number">
                 <td>
@@ -60,7 +64,7 @@
                 <td>{{ issue.title }}</td>
             </tr>
 
-            <tr v-if="issues.length == 0 && !loader.getIssues">
+            <tr v-if="noIssues">
                 <td class="text-center" colspan="2">Nenhuma issues encontrada!</td>
             </tr>
             </tbody>
@@ -78,7 +82,7 @@ export default {
   created() {
     const localData = JSON.parse(localStorage.getItem('gitHubIssues'));
 
-    if (localData.username && localData.repository) {
+    if (localData && localData.username && localData.repository) {
       this.username = localData.username;
       this.repository = localData.repository;
       this.getIssues();
@@ -90,25 +94,51 @@ export default {
       username: '',
       repository: '',
       issues: [],
+      response: {
+        status: '',
+        message: '',
+      },
       loader: {
         getIssues: false,
       },
     };
   },
 
+  computed: {
+    showIssues() {
+      return this.issues.length > 0 && !this.loader.getIssues;
+    },
+
+    noIssues() {
+      return this.issues.length === 0 && !this.loader.getIssues;
+    },
+  },
+
   methods: {
     reset() {
       this.username = '';
       this.repository = '';
+      this.resetResponse();
+      localStorage.removeItem('gitHubIssues');
+    },
+
+    resetResponse() {
+      this.response.status = '';
+      this.response.message = '';
     },
 
     getIssues() {
+      this.resetResponse();
+      this.issues = [];
       if (this.username && this.repository) {
         localStorage.setItem('gitHubIssues', JSON.stringify({ username: this.username, repository: this.repository }));
         this.loader.getIssues = true;
         const url = `https://api.github.com/repos/${this.username}/${this.repository}/issues`;
         axios.get(url).then((response) => {
           this.issues = response.data;
+        }).catch(() => {
+          this.response.status = 'error';
+          this.response.message = 'Reposiório não encontrado.';
         }).finally(() => {
           this.loader.getIssues = false;
         });
